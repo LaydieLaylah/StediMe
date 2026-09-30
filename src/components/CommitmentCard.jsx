@@ -1,0 +1,3 @@
+import React from 'react';
+import {ArrowRight,Flame} from 'lucide-react';import {Link} from 'react-router-dom';
+export default function CommitmentCard({commitment}){return <article className="item-card"><div className="item-main"><div className="item-title-row"><h3>{commitment.name}</h3><span className="status active">{commitment.status}</span></div><p>{commitment.target} · {commitment.frequency}</p><div className="meta-row"><span><Flame size={14}/> {commitment.streak} streak</span><span>{commitment.history.length} check-ins</span></div></div><Link className="text-link" to={`/commitments/${commitment.id}`}>View commitment <ArrowRight size={16}/></Link></article>}
