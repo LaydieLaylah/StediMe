@@ -1,4 +1,159 @@
-import React from 'react';
-import {useEffect,useRef,useState} from 'react';
-import {ImagePlus, X, CheckCircle2} from 'lucide-react';
-export default function ProofComposer({onSubmit,buttonLabel='Submit proof'}){const [text,setText]=useState('');const [file,setFile]=useState(null);const input=useRef(null);const [preview,setPreview]=useState('');useEffect(()=>()=>preview&&URL.revokeObjectURL(preview),[preview]);const choose=e=>{const f=e.target.files?.[0];if(!f)return;setFile(f);setPreview(URL.createObjectURL(f))};const submit=e=>{e.preventDefault();if(!text.trim()&&!file)return;onSubmit({text,imageName:file?.name||null});setText('');setFile(null);setPreview('');if(input.current)input.current.value=''};return <form className="proof-card" onSubmit={submit}><div className="eyebrow">TODAY'S PROOF</div><h3>Submit proof to automatically complete this session.</h3><textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Write a short note about what you completed..."/><div className="upload-row">{preview?<div className="preview"><img src={preview} alt="Proof preview"/><button type="button" className="icon-button" onClick={()=>{setFile(null);setPreview('');if(input.current)input.current.value=''}}><X size={16}/></button></div>:<button type="button" className="upload-button" onClick={()=>input.current?.click()}><ImagePlus size={18}/> Upload screenshot / photo</button>}<input ref={input} hidden type="file" accept="image/*" onChange={choose}/></div>{file&&<div className="file-name"><CheckCircle2 size={15}/> {file.name}</div>}<button className="primary full" type="submit" disabled={!text.trim()&&!file}>{buttonLabel}</button></form>}
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  ImagePlus,
+  X,
+  CheckCircle2,
+} from 'lucide-react';
+
+export default function ProofComposer({
+  onSubmit,
+  buttonLabel = 'Submit proof',
+  disabled = false,
+}) {
+  const [text, setText] = useState('');
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
+
+  const input = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  const choose = (event) => {
+    if (disabled) {
+      return;
+    }
+
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile) {
+      return;
+    }
+
+    setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
+  };
+
+  const removeFile = () => {
+    if (disabled) {
+      return;
+    }
+
+    setFile(null);
+    setPreview('');
+
+    if (input.current) {
+      input.current.value = '';
+    }
+  };
+
+  const submit = async (event) => {
+    event.preventDefault();
+
+    if (
+      disabled ||
+      (!text.trim() && !file)
+    ) {
+      return;
+    }
+
+    await onSubmit({
+      text: text.trim(),
+      imageName: file?.name || null,
+    });
+  };
+
+  const hasProof =
+    Boolean(text.trim()) || Boolean(file);
+
+  return (
+    <form
+      className="proof-card"
+      onSubmit={submit}
+    >
+      <div className="eyebrow">
+        TODAY'S PROOF
+      </div>
+
+      <h3>
+        Submit proof to automatically complete this session.
+      </h3>
+
+      <textarea
+        value={text}
+        onChange={(event) =>
+          setText(event.target.value)
+        }
+        placeholder="Write a short note about what you completed..."
+        disabled={disabled}
+      />
+
+      <div className="upload-row">
+        {preview ? (
+          <div className="preview">
+            <img
+              src={preview}
+              alt="Proof preview"
+            />
+
+            <button
+              type="button"
+              className="icon-button"
+              onClick={removeFile}
+              disabled={disabled}
+              aria-label="Remove proof image"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="upload-button"
+            onClick={() => input.current?.click()}
+            disabled={disabled}
+          >
+            <ImagePlus size={18} />
+            Upload screenshot / photo
+          </button>
+        )}
+
+        <input
+          ref={input}
+          hidden
+          type="file"
+          accept="image/*"
+          onChange={choose}
+          disabled={disabled}
+        />
+      </div>
+
+      {file && (
+        <div className="file-name">
+          <CheckCircle2 size={15} />
+          {file.name}
+        </div>
+      )}
+
+      <button
+        className="primary full"
+        type="submit"
+        disabled={disabled || !hasProof}
+      >
+        {disabled
+          ? 'Session completed'
+          : buttonLabel}
+      </button>
+    </form>
+  );
+}
